@@ -1,23 +1,22 @@
 import {Resolver} from '@parcel/plugin';
 import path from 'path';
-import jison from 'jison';
 
 export default new Resolver({
   async resolve({specifier, options, dependency}) {
     const exists = await options.inputFS.exists(specifier)
+
     if (!exists && dependency) {
+      // split file name
       const a = dependency.resolveFrom.split('/');
       const basepath = a.slice(0, a.length - 1).join('/');
-      const specpath = specifier + '.jison'
-      const fpath = path.join(basepath, specpath);
-      const existsJison = await options.inputFS.exists(fpath);
+
+      // resolve path to file with jison extension
+      const filePath = path.join(basepath, specifier + '.jison');
+
+      const existsJison = await options.inputFS.exists(filePath);
       if (existsJison) {
-        const source = await options.inputFS.readFile(fpath);
-        const sourceString = source.toString();
-        const parser = new jison.Jison.Parser(sourceString);
         return {
-          filePath: fpath,
-          code: parser.generate()
+          filePath,
         }
       }
     }
